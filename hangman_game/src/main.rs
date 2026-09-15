@@ -16,10 +16,16 @@ fn pick_a_random_word() -> String {
 
 fn print_chars(ch: &Vec<char>) {
   // print all the characters in the vector
+  let mut output = String::new();
+  for c in ch{
+      output.push(*c);
+  }
+  println!("{}", output);
 }
 
 fn num_valid_chars(ch: &Vec<char>) -> usize {
   // number of characters in the vector that are not '_'
+  ch.iter().filter(|c| *c != '_').count()
 }
 
 fn main() {
@@ -31,7 +37,10 @@ fn main() {
 
   while guesses_left > 0 {
       // print the characters in the current guess
+      print_chars(&secret_word_chars);      
       // print # of guesses left
+      println!("Guesses left: {}", guesses_left);
+
       print!("Please guess a letter: ");
       io::stdout().flush().unwrap();
 
@@ -41,7 +50,10 @@ fn main() {
 
       // adjust guessed_letters, current guess
       // adjust guesses_left
+      guesses_left -= 1;
       // return if successfully guessed word
+      return 
   }
   // print failure message
+  println!("You lose!")
 }
