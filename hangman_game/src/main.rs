@@ -47,8 +47,14 @@ fn main() {
       let mut input = String::new();
       io::stdin().read_line(&mut input).expect("Failed to read line");
       let input_char = input.chars().next().unwrap();
-
+      
       // adjust guessed_letters, current guess
+      for i in 0..secret_word_chars.len() {
+          if secret_word_chars[i] == input_char {
+              println!("Correct!");
+              
+          }
+      }
       // adjust guesses_left
       guesses_left -= 1;
       // return if successfully guessed word
