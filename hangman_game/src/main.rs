@@ -25,7 +25,7 @@ fn print_chars(ch: &Vec<char>) {
 
 fn num_valid_chars(ch: &Vec<char>) -> usize {
   // number of characters in the vector that are not '_'
-  ch.iter().filter(|c| *c != '_').count()
+  ch.iter().filter(|c| **c != '_').count()
 }
 
 fn main() {
@@ -33,11 +33,13 @@ fn main() {
   let secret_word_chars: Vec<char> = secret_word.chars().collect();
   println!("random word: {}", secret_word);
 
+  let mut current_guess = vec!['_'; secret_word_chars.len()];
+  let mut guessed_letters: Vec<char> = Vec::new();
   let mut guesses_left = NUM_INCORRECT_GUESSES;
 
   while guesses_left > 0 {
       // print the characters in the current guess
-      print_chars(&secret_word_chars);      
+      print_chars(&current_guess);   
       // print # of guesses left
       println!("Guesses left: {}", guesses_left);
 
@@ -48,17 +50,36 @@ fn main() {
       io::stdin().read_line(&mut input).expect("Failed to read line");
       let input_char = input.chars().next().unwrap();
       
-      // adjust guessed_letters, current guess
+      // Check whether this letter has already been guessed.
+      if guessed_letters.contains(&input_char) {
+          println!("You already guessed that letter.");
+          continue;
+      }
+      
+      guessed_letters.push(input_char);
+      
+      // Reveal every occurrence of the guessed letter.
+      let mut correct_guess = false;
+      
       for i in 0..secret_word_chars.len() {
           if secret_word_chars[i] == input_char {
-              println!("Correct!");
-              
+              current_guess[i] = input_char;
+              correct_guess = true;
           }
       }
-      // adjust guesses_left
-      guesses_left -= 1;
-      // return if successfully guessed word
-      return 
+      
+      if correct_guess {
+          println!("Correct!");
+          if num_valid_chars(&current_guess) == secret_word_chars.len() {
+              print_chars(&current_guess);
+              println!("You win!");
+              return;
+          }
+      } else {
+          println!("Incorrect!");
+          guesses_left -= 1;
+      }
+
   }
   // print failure message
   println!("You lose!")
