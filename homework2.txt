@@ -1,0 +1,25 @@
+Problem 1: 
+
+md5sum < file 
+
+date > file
+
+uname -a >> file
+
+find /etc 2> file
+
+du /etc &e file 
+
+ls /etc | grep host
+
+
+
+problem 4
+
+printenv
+
+echo "$HOME"
+
+SHELL=/bin/bash
+
+md5sum "$(which ls)"

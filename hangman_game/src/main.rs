@@ -25,7 +25,13 @@ fn print_chars(ch: &Vec<char>) {
 
 fn num_valid_chars(ch: &Vec<char>) -> usize {
   // number of characters in the vector that are not '_'
-  ch.iter().filter(|c| **c != '_').count()
+  let mut count = 0; 
+  for c in ch {
+    if *c != '_' {
+        count += 1; 
+    }
+  }
+  count 
 }
 
 fn main() {
@@ -33,8 +39,12 @@ fn main() {
   let secret_word_chars: Vec<char> = secret_word.chars().collect();
   println!("random word: {}", secret_word);
 
+    // make a vector of length equal to the secret word,
+    // and fill it with '_' characters
   let mut current_guess = vec!['_'; secret_word_chars.len()];
+//   memory of all guessed characters
   let mut guessed_letters: Vec<char> = Vec::new();
+//   total guesses left 
   let mut guesses_left = NUM_INCORRECT_GUESSES;
 
   while guesses_left > 0 {
@@ -61,6 +71,7 @@ fn main() {
       // Reveal every occurrence of the guessed letter.
       let mut correct_guess = false;
       
+    //   if a guess is correct, then replace the same position with the guessed letter
       for i in 0..secret_word_chars.len() {
           if secret_word_chars[i] == input_char {
               current_guess[i] = input_char;
