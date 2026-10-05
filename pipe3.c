@@ -5,34 +5,23 @@
 #include <sys/wait.h>
 
 int main(int argc, char* argv[]) {
-    int pipefds[2];
-    pid_t pid;
-    char buf[30];
+    int fd[2];
+    pipe(fd);
 
-    // create pipe
-    if (pipe(pipefds) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
+    if (fork() == 0) {
+        close(fd[1]);
+
+        char buf[2] = {0};
+        ssize_t n = read(fd[0], buf, 1);
+        printf("child: n=%zd, buf=%s\n", n, buf);
+
+        n = read(fd[0], buf, 1);
+        printf("child: second read=%zd\n", n);
+        _exit(0);
     }
 
-    memset(buf, 0, 30);
-    pid = fork();
-
-    if(pid>0){
-        printf("PARENT: writing to the pipe\n");
-        close(pipefds[0]);
-        write(pipefds[1], "CSCE313", 30);
-        close(pipefds[1]);
-        wait(NULL);
-    }
-    else{
-        while(read(pipefds[0], buf, 1) == 1) {
-            printf("CHILD read from pipe -- %s\n", buf);
-        }
-        close(pipefds[0]);
-        
-        printf("CHILD EXITING");
-        exit(EXIT_SUCCESS);
-    }
-    return 0; 
+    close(fd[0]);
+    write(fd[1], "A", 1);
+    close(fd[1]);
+    wait(NULL);
 }
