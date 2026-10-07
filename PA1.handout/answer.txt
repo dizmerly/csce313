@@ -1,0 +1,61 @@
+10 KB time was total 0.130s
+1 MB time was total 0.128s
+10 MB time was total 0.145s
+50 MB time was total 0.345s
+100 MB time was total 0.553
+500 MB time was total 2.675
+
+The main bottleneck seems to come from the fact that for every request that the 
+program makes, the program has to first request, wait for the server to reply, and 
+read and transfer the chunk before moving onto the next request, therefore the bigger
+the file, with a chunk size of 5000 bytes, the program will have to run longer to 
+recieve all those pieces. The 100 MB file for example took 0.553 seconds, whereas the 500MB 
+file took 2.675 seconds. In other words, larger files need more transfers, and more transfers
+end up taking more time. 
+
+
+Logs from my experiements. 
+
+dizmerly@Mac PA1.handout % truncate -s 10K BIMDC/testfile.bin          
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin       
+File size: 10240 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.06s user 0.04s system 84% cpu 0.130 total
+
+
+dizmerly@Mac PA1.handout % truncate -s 1M BIMDC/testfile.bin 
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin
+File size: 1048576 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.07s user 0.05s system 88% cpu 0.128 total
+
+
+dizmerly@Mac PA1.handout % truncate -s 10M BIMDC/testfile.bin   
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin
+File size: 10485760 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.08s user 0.06s system 93% cpu 0.145 total
+
+
+dizmerly@Mac PA1.handout % truncate -s 50M BIMDC/testfile.bin  
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin
+File size: 52428800 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.10s user 0.24s system 97% cpu 0.345 total
+
+
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin       
+File size: 104857600 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.13s user 0.41s system 98% cpu 0.553 total
+
+dizmerly@Mac PA1.handout % time ./client -m 5000 -f testfile.bin
+File size: 524288000 bytes
+Client-side is done and exited
+Server terminated
+./client -m 5000 -f testfile.bin  0.44s user 2.13s system 96% cpu 2.675 total

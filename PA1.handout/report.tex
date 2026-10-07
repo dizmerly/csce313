@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\title{HW1}
+\author{Daniel Izmerly 437005378}
+\date{September 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{PA1 Report}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrr}
+\hline
+File size & Size (bytes) & Transfer time (seconds) \\
+\hline
+10 KB  & 10,240      & 0.130 \\
+1 MB   & 1,048,576   & --- \\
+10 MB  & 10,485,760  & 0.145 \\
+50 MB  & 52,428,800  & 0.345 \\
+100 MB & 104,857,600 & 0.553 \\
+\hline
+\end{tabular}
+\caption{Observed total client run time for binary file transfers with a 5,000-byte chunk size. The 1 MB transfer must be measured again because the earlier run reported a file size of zero.}
+\end{table}
+
+\end{document}
