@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "id": "csce313-l10-unix-io-v1",
+  "title": "CSCE 313 Lecture 10: UNIX I/O",
+  "description": "Intermediate questions on file descriptors, redirection, and standard I/O buffering.",
+  "questions": [
+    {
+      "id": "l10-q01",
+      "question": "A process starts with only descriptors 0, 1, and 2 open. It opens file A, closes the returned descriptor, then opens file B. Which descriptor does the second open return?",
+      "hints": ["An open call uses the lowest available descriptor number."],
+      "choices": [{"id": "a", "text": "2"}, {"id": "b", "text": "3"}, {"id": "c", "text": "4"}, {"id": "d", "text": "It depends on which file was opened first"}],
+      "correctAnswerId": "b",
+      "explanation": "The first open gets descriptor 3. Closing it frees 3, so the next open reuses 3. Descriptors 0 through 2 remain open."
+    },
+    {
+      "id": "l10-q02",
+      "question": "A program calls open() twice on the same file, obtaining fd3 and fd4. It reads one byte through fd3. What happens to the file position used by fd4?",
+      "hints": ["Count open-file table entries, not files on disk."],
+      "choices": [{"id": "a", "text": "It advances by one byte because both descriptors name the same file."}, {"id": "b", "text": "It stays unchanged because each open() call creates a separate open-file table entry."}, {"id": "c", "text": "It resets to the start of the file."}, {"id": "d", "text": "It becomes invalid until fd3 is closed."}],
+      "correctAnswerId": "b",
+      "explanation": "Each open() call creates its own open-file table entry and offset. Reading through fd3 advances only fd3's entry. Sharing a disk file does not by itself share an offset."
+    },
+    {
+      "id": "l10-q03",
+      "question": "A file contains \"foobar\". A program opens it twice as fd1 and fd2, reads one byte through fd2, calls dup2(fd2, fd1), then reads one byte through fd1. Which character does the final read obtain?",
+      "hints": ["The first read moves fd2's offset to 1.", "After dup2, fd1 refers to fd2's open-file table entry."],
+      "choices": [{"id": "a", "text": "f"}, {"id": "b", "text": "o"}, {"id": "c", "text": "b"}, {"id": "d", "text": "No character; fd1 is closed"}],
+      "correctAnswerId": "b",
+      "explanation": "The read through fd2 consumes 'f'. dup2 makes fd1 share fd2's offset, now at byte 1, so the next read obtains 'o'. dup2 closes fd1's previous association but leaves fd1 usable."
+    },
+    {
+      "id": "l10-q04",
+      "question": "A process opens a file, then forks. The child reads one byte and exits; the parent waits for the child and then reads one byte through its inherited descriptor. If the file contains \"foobar\", what does the parent read?",
+      "hints": ["The parent waits, so the child's read occurs first.", "fork() makes the two descriptors share one open-file table entry."],
+      "choices": [{"id": "a", "text": "f"}, {"id": "b", "text": "o"}, {"id": "c", "text": "b"}, {"id": "d", "text": "EOF"}],
+      "correctAnswerId": "b",
+      "explanation": "The child consumes 'f' and advances the shared offset to 1. After wait returns, the parent's read obtains 'o'."
+    },
+    {
+      "id": "l10-q05",
+      "question": "A process forks first. Each process then independently opens the same file and reads one byte. The file begins \"abcde\". What does each process read?",
+      "hints": ["Consider whether open() occurs before or after fork()."],
+      "choices": [{"id": "a", "text": "One reads 'a' and the other reads 'b'."}, {"id": "b", "text": "Both read 'a'."}, {"id": "c", "text": "Both read 'b'."}, {"id": "d", "text": "The result depends on which process runs first."}],
+      "correctAnswerId": "b",
+      "explanation": "Each process calls open() after fork(), creating a separate open-file table entry with offset 0. Both first reads therefore obtain 'a', regardless of scheduling."
+    },
+    {
+      "id": "l10-q06",
+      "question": "A shell's child opens output.txt as fd 3, calls dup2(3, STDOUT_FILENO), closes fd 3, then execs a program. Where does that program's standard output go?",
+      "hints": ["Closing fd 3 does not close another descriptor that shares its open-file entry."],
+      "choices": [{"id": "a", "text": "To output.txt through fd 1"}, {"id": "b", "text": "To the terminal because exec resets fd 1"}, {"id": "c", "text": "Nowhere because closing fd 3 also closes fd 1"}, {"id": "d", "text": "To output.txt only if the program writes through fd 3"}],
+      "correctAnswerId": "a",
+      "explanation": "dup2 makes fd 1 refer to output.txt. Closing the spare fd 3 leaves fd 1 open, and exec preserves the descriptor table, so the new program writes standard output to the file."
+    },
+    {
+      "id": "l10-q07",
+      "question": "Starting with stdout and stderr both connected to the terminal, what is the result of `cmd > f 2>&1`?",
+      "hints": ["Apply the redirections from left to right."],
+      "choices": [{"id": "a", "text": "Only stdout goes to f; stderr stays on the terminal."}, {"id": "b", "text": "Only stderr goes to f; stdout stays on the terminal."}, {"id": "c", "text": "Both stdout and stderr go to f."}, {"id": "d", "text": "Both streams stay on the terminal."}],
+      "correctAnswerId": "c",
+      "explanation": "The first redirection points fd 1 at f. Then `2>&1` duplicates the current fd 1 onto fd 2, so both point at f. Reversing the order would leave stderr on the terminal."
+    },
+    {
+      "id": "l10-q08",
+      "question": "Why does a shell normally perform output redirection in the child process before exec?",
+      "hints": ["Think about the shell's own descriptor 1 after the command finishes."],
+      "choices": [{"id": "a", "text": "Only a child process is allowed to call dup2()."}, {"id": "b", "text": "It keeps the shell's own stdout connected as before while the executed command inherits the redirected descriptor."}, {"id": "c", "text": "exec automatically creates the output file in the child."}, {"id": "d", "text": "The parent and child cannot share any open-file entries."}],
+      "correctAnswerId": "b",
+      "explanation": "Changing fd 1 in the child gives the executed command redirected stdout without changing the shell's own fd 1. exec retains the child's descriptor table."
+    },
+    {
+      "id": "l10-q09",
+      "question": "A program runs `printf(\"tick\\n\"); sleep(5);`. Why can `tick` appear immediately on a terminal but remain absent from a redirected file during the sleep?",
+      "hints": ["The buffering mode of stdout depends on its destination."],
+      "choices": [{"id": "a", "text": "Terminal stdout is typically line buffered, while redirected stdout is typically fully buffered."}, {"id": "b", "text": "A redirected file ignores newline characters."}, {"id": "c", "text": "printf sends terminal output through stderr."}, {"id": "d", "text": "sleep discards all data written to regular files."}],
+      "correctAnswerId": "a",
+      "explanation": "A newline normally flushes line-buffered stdout attached to a terminal. When stdout is redirected to a file, it is generally fully buffered, so the short line may stay in the user-space buffer until fflush, a full buffer, or normal process exit."
+    },
+    {
+      "id": "l10-q10",
+      "question": "A program executes `printf(\"hello\\n\"); fork(); return 0;`. What output is expected when stdout is a pipe, assuming normal process exit and no explicit flush before fork?",
+      "hints": ["A pipe makes stdout fully buffered.", "fork() copies the user-space stdio buffer."],
+      "choices": [{"id": "a", "text": "No lines"}, {"id": "b", "text": "One `hello` line"}, {"id": "c", "text": "Two `hello` lines"}, {"id": "d", "text": "An unpredictable number of lines"}],
+      "correctAnswerId": "c",
+      "explanation": "With pipe output, the newline does not normally flush fully buffered stdout before fork. Both processes inherit a copy of the buffered line and each flushes it on normal exit, yielding two lines. Flushing before fork prevents the duplicate."
+    }
+  ]
+}
